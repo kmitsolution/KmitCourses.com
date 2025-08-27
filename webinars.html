@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Upcoming Webinars — KMIT EDU</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container nav">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">
+            <img
+              src="assets/images/Original.png"
+              alt="KMIT Solutions Services Logo"
+              style="
+                width: 36px;
+                height: 36px;
+                display: block;
+                object-fit: contain;
+                filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.12));
+                background: transparent;
+                border-radius: 12px;
+              "
+            />
+          </div>
+          <a href="index.html">KMIT Courses (KMIT Solutions Services)</a>
+        </div>
+        <nav>
+          <a href="courses.html" class="btn">Browse Courses</a>
+          <a href="webinars.html" class="btn primary">Webinar</a>
+          <a href="https://kmitedu.com/login" class="btn primary"
+            >Login / Signup</a
+          >
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="container">
+          <h1>Upcoming Webinars</h1>
+          <p class="muted">
+            Register for our upcoming live webinars and events.
+          </p>
+        </div>
+      </section>
+      <section>
+        <div class="container">
+          <div class="grid cards">
+            <!-- Webinar Card 1 -->
+            <article class="glass card">
+              <h3>Kickstart Your Career in Tech</h3>
+              <div class="muted small">
+                Date: 28 Aug 2025 · Time: 7:00–8:00 PM IST · Zoom
+              </div>
+              <p class="muted">
+                Discover career paths, learn how to choose a domain, and see a
+                live demo of our LMS.
+              </p>
+              <ul class="muted small">
+                <li>✅ Free certificate</li>
+                <li>✅ Q&A with mentors</li>
+                <li>✅ Recording available</li>
+              </ul>
+              <a class="btn primary" href="#register">Register Now</a>
+              <div class="embed" id="register" style="margin-top: 16px">
+                <!-- Replace the FORM_ID below with your own Google Forms ID -->
+                <iframe
+                  src="https://docs.google.com/forms/d/e/FORM_ID/viewform?embedded=true"
+                  width="100%"
+                  height="320"
+                  frameborder="0"
+                  marginheight="0"
+                  marginwidth="0"
+                  >Loading…</iframe
+                >
+              </div>
+            </article>
+            <!-- Add more webinar cards here as needed -->
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="container footer-grid">
+        <div>
+          <div class="brand">
+            <div class="logo" aria-hidden="true">
+              <img
+                src="assets/images/Original.png"
+                alt="KMIT Solutions Services Logo"
+                style="
+                  width: 36px;
+                  height: 36px;
+                  display: block;
+                  object-fit: contain;
+                  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.12));
+                  background: transparent;
+                  border-radius: 12px;
+                "
+              />
+            </div>
+            <strong>KMIT EDU</strong>
+          </div>
+          <p class="small">
+            © <span id="year"></span> KMIT EDU. All rights reserved.
+          </p>
+        </div>
+        <div class="small">
+          <strong>Contact</strong><br />
+          +91 99999 99999<br />
+          hello@kmitedu.com
+        </div>
+        <div class="small">
+          <strong>Links</strong><br />
+          <a href="courses.html">Courses</a> ·
+          <a href="webinars.html">Webinar</a> ·
+          <a href="https://kmitedu.com/login" target="_blank" rel="noopener"
+            >Login</a
+          >
+        </div>
+      </div>
+    </footer>
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

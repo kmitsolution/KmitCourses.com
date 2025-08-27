@@ -1,0 +1,4 @@
+/* Student table header text color fix */
+.student-table th, .student-th {
+    color: #111 !important;
+}

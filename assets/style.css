@@ -1,0 +1,218 @@
+/* Student table header text color */
+.student-th {
+  color: #081326
+}
+/* Carousel Styles */
+.carousel-container {
+  width: 100vw;
+  min-width: 100vw;
+  max-width: 100vw;
+  position: relative;
+  left: 0;
+  right: 0;
+  margin: 0;
+  box-sizing: border-box;
+  background: linear-gradient(90deg, rgba(144,0,255,0.10), rgba(90,176,255,0.10));
+  padding: 0;
+  z-index: 10;
+  overflow-x: hidden;
+}
+@media (max-width: 1200px) {
+  .carousel-container {
+    left: 0;
+    right: 0;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100vw;
+    min-width: 100vw;
+    max-width: 100vw;
+  }
+}
+
+.carousel {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  min-height: 120px;
+  width: 100vw;
+  min-width: 100vw;
+  max-width: 100vw;
+  margin: 0;
+}
+.carousel-slide {
+  flex: 0 0 100%;
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
+  position: absolute;
+  left: 0; top: 0; width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.carousel-slide.active {
+  opacity: 1;
+  position: relative;
+  pointer-events: auto;
+}
+.carousel-content {
+  background: rgba(18,24,51,0.92);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(90,176,255,0.10);
+  padding: 32px 40px;
+  text-align: center;
+  color: var(--text);
+  min-width: 260px;
+  max-width: 520px;
+}
+.carousel-content h2 {
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--acc);
+}
+.carousel-content p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0 0 0;
+}
+.carousel-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  display: inline-block;
+}
+.carousel-dot.active {
+  background: var(--acc);
+  opacity: 1;
+}
+@media (max-width: 600px) {
+  .carousel-content {
+    padding: 18px 8px;
+    font-size: 1rem;
+  }
+  .carousel-content h2 {
+    font-size: 1.2rem;
+  }
+}
+/* KMIT EDU Homepage Styles */
+:root{
+  --bg:#0b1020;
+  --card:#121833;
+  --text:#e8edff;
+  --muted:#9aa3c0;
+  --acc:#5ab0ff;
+  --acc2:#90f;
+  --ring: 0 10px 30px rgba(90,176,255,.25);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color:var(--text);
+  background: radial-gradient(1000px 560px at 80% -10%, rgba(144,0,255,.18), transparent 40%) ,
+              radial-gradient(900px 560px at 0% -10%, rgba(90,176,255,.18), transparent 40%),
+              var(--bg);
+}
+a{ color:inherit; text-decoration:none }
+.container{ max-width:1200px; margin:0 auto; padding:0 20px }
+header{
+  position:sticky; top:0; backdrop-filter:saturate(1.2) blur(10px);
+  background:linear-gradient(to bottom, rgba(11,16,32,.8), rgba(11,16,32,.5));
+  border-bottom:1px solid rgba(255,255,255,.06);
+  z-index:50;
+}
+.nav{
+  display:flex; align-items:center; justify-content:space-between; height:72px;
+}
+.brand{ display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.4px }
+.brand .logo{
+  width:36px; height:36px; border-radius:12px; background:
+    radial-gradient(10px 10px at 28% 30%, #fff, transparent 60%),
+    linear-gradient(135deg, var(--acc2), var(--acc));
+  box-shadow:var(--ring);
+}
+.nav a.btn{ margin-left:12px }
+.btn{
+  display:inline-flex; align-items:center; gap:8px; padding:12px 18px;
+  border-radius:14px; font-weight:600; border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(to bottom right, rgba(144,0,255,.18), rgba(90,176,255,.18));
+  transition:.2s transform,.2s box-shadow,.2s background;
+  cursor:pointer;
+}
+.btn:hover{ transform:translateY(-1px); box-shadow:var(--ring) }
+.btn.primary{
+  background:linear-gradient(135deg, var(--acc2), var(--acc));
+  color:#081326; border:0;
+}
+.hero{ padding:80px 0 40px }
+.hero-inner{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center }
+.hero h1{ font-size:48px; line-height:1.05; margin:0 0 14px }
+.hero p{ color:var(--muted); font-size:18px; margin:0 0 28px }
+.pill{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid rgba(255,255,255,.12);
+  border-radius:999px; font-size:13px; color:var(--muted); margin-bottom:16px;
+  background:rgba(255,255,255,.04)
+}
+.glass{
+  background:linear-gradient(to bottom right, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px; box-shadow: 0 10px 40px rgba(0,0,0,.3);
+}
+.card{ padding:24px }
+.hero-card{
+  display:grid; gap:14px; padding:24px; 
+}
+.two-btns{ display:flex; gap:12px; flex-wrap:wrap }
+.illus{
+  min-height:320px; border-radius:24px; border:1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(100px 100px at 25% 30%, rgba(255,255,255,.5), transparent 60%),
+    linear-gradient(135deg, rgba(144,0,255,.45), rgba(90,176,255,.45));
+  box-shadow:var(--ring);
+}
+section{ padding:48px 0 }
+.section-header{ display:flex; align-items:end; justify-content:space-between; margin-bottom:16px }
+.section-header h2{ margin:0; font-size:28px }
+.muted{ color:var(--muted) }
+.grid{ display:grid; gap:16px }
+.grid.cards{ grid-template-columns:repeat(12, 1fr) }
+.course{ grid-column:span 4; display:flex; flex-direction:column; gap:12px }
+.course .thumb{
+  height:160px; border-radius:16px; background:linear-gradient(135deg, rgba(144,0,255,.24), rgba(90,176,255,.24));
+  border:1px solid rgba(255,255,255,.08);
+}
+.course .title{ font-weight:700 }
+.course .meta{ display:flex; gap:10px; font-size:13px; color:var(--muted) }
+.course .actions{ display:flex; gap:10px; margin-top:auto }
+.badge{ font-size:12px; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1) }
+.webinar{ display:grid; grid-template-columns:1.1fr .9fr; gap:20px; align-items:start }
+.webinar .embed{ min-height:360px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08) }
+.about{ display:grid; grid-template-columns:1fr 1fr; gap:20px }
+.testi{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px }
+.quote{ padding:18px; border-radius:16px; border:1px solid rgba(255,255,255,.08) }
+footer{ padding:32px 0 60px; color:var(--muted); border-top:1px solid rgba(255,255,255,.08) }
+.footer-grid{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:20px }
+.small{ font-size:13px }
+/* Responsive */
+@media (max-width: 980px){
+  .hero-inner, .webinar, .about{ grid-template-columns:1fr }
+  .grid.cards{ grid-template-columns:repeat(2,1fr) }
+  .course{ grid-column:auto }
+  .testi{ grid-template-columns:1fr }
+  header{ position:static }
+}
+@media (max-width: 560px){
+  .hero h1{ font-size:36px }
+  .grid.cards{ grid-template-columns:1fr }
+}
