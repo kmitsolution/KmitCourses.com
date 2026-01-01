@@ -18,6 +18,15 @@ if (session_status() === PHP_SESSION_NONE) {
     />
     <link rel="stylesheet" href="assets/style.css" />
     <style>
+      .header-social img { width:20px; height:20px; display:block; }
+      /* Ensure navbar lays out in a single row and the search form can shrink
+         so the social icons remain on the same line and are right-aligned */
+      #mainNav { display:flex; align-items:center; gap:10px; }
+      #mainNav form { flex:1 1 200px; min-width:0; }
+      .header-social { margin-left:12px; display:inline-flex; align-items:center; gap:10px; }
+      @media (max-width: 700px) {
+        .header-social { margin-left:8px !important; }
+      }
       .nav-toggle {
         display: none;
         background: none;
@@ -177,7 +186,18 @@ if (session_status() === PHP_SESSION_NONE) {
         <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' style='vertical-align:middle;margin-right:8px;fill:#5ab0ff;' viewBox='0 0 24 24'><path d='M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.2 2.2z'/></svg>
         <span style="font-weight:600;letter-spacing:1px;font-size:1.08em;">Call us:</span>
         <a href="tel:+919739299502" style="color:#5ab0ff;font-weight:700;text-decoration:none;margin-left:8px;font-size:1.08em;">+91-9739299502</a>
-        <span style="margin-left:28px;font-weight:700;font-size:1.08em;letter-spacing:1px;">KMIT Courses | KMIT Solutions Services</span>
+        <span style="margin-left:12px;font-weight:700;font-size:1.08em;letter-spacing:1px;">KMIT Courses | KMIT Solutions Services</span>
+        <span class="header-social" style="margin-left:auto;display:inline-flex;align-items:center;gap:10px;">
+              <a href="https://www.facebook.com/kmitdevops/" target="_blank" rel="noopener" title="Facebook" style="display:inline-flex;align-items:center;color:#0078d4;text-decoration:none;">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/facebook.svg" alt="Facebook" style="width:20px;height:20px;filter:invert(1) brightness(1.2);" />
+              </a>
+              <a href="https://instagram.com/" target="_blank" rel="noopener" title="Instagram" style="display:inline-flex;align-items:center;color:#0078d4;text-decoration:none;">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/instagram.svg" alt="Instagram" style="width:20px;height:20px;filter:invert(1) brightness(1.2);" />
+              </a>
+              <a href="https://wa.me/9739299502" target="_blank" rel="noopener" title="WhatsApp" style="display:inline-flex;align-items:center;color:#0078d4;text-decoration:none;">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/whatsapp.svg" alt="WhatsApp" style="width:20px;height:20px;filter:invert(1) brightness(1.2);" />
+              </a>
+            </span>
       </span>
     </div>
     <header>
@@ -238,6 +258,7 @@ if (session_status() === PHP_SESSION_NONE) {
             <?php endif; ?>
             <button id="contactBtn" class="btn" type="button" style="min-width:110px;color:#0078d4;background:#e5e7eb;border:1.5px solid #e0e0e0;font-size:1rem;">Contact Us</button>
             <a href="courses/OnlineBatches.php" class="btn" style="min-width:110px;color:#0078d4;background:#e5e7eb;border:1.5px solid #e0e0e0;font-size:1rem;">Live Classes</a>
+
           </nav>
           <!-- Contact Us Modal (unchanged) -->
           <div id="contactModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); justify-content:center; align-items:center;">
