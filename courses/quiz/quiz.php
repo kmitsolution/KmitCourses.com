@@ -24,10 +24,24 @@ if (isset($_GET['delete']) && $_GET['delete'] !== '') {
         $stmt = $pdo->prepare('CALL delete_exam_by_id(?)');
         $stmt->execute([$quiz_id]);
         $stmt->closeCursor();
-        header('Location: exam.php');
+        header('Location: quiz.php');
         exit;
     } catch (Exception $e) {
         $message = 'Error deleting exam: ' . $e->getMessage();
+    }
+}
+
+// Handle edit mode - fetch exam data if edit parameter is present
+$editExam = null;
+if (isset($_GET['edit']) && $_GET['edit'] !== '') {
+    $edit_id = intval($_GET['edit']);
+    try {
+        $stmt = $pdo->prepare('SELECT e.exam_id, e.exam_name, ec.course_id, ec.level_id FROM exams e LEFT JOIN exam_courses ec ON e.exam_id = ec.exam_id WHERE e.exam_id = ?');
+        $stmt->execute([$edit_id]);
+        $editExam = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+    } catch (Exception $e) {
+        $editExam = null;
     }
 }
 
@@ -36,8 +50,8 @@ $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (isset($_POST['action'])) {
     $action = $_POST['action'];
-    $quiz_id = intval($_POST['quiz_id'] ?? 0);
-    $quiz_name = trim($_POST['quiz_name'] ?? '');
+    $quiz_id = intval($_POST['exam_id'] ?? $_POST['quiz_id'] ?? 0);
+    $quiz_name = trim($_POST['exam_name'] ?? '');
     $course_id = intval($_POST['course_id'] ?? 0);
     $level_id = intval($_POST['level_id'] ?? 0);
     try {
@@ -46,11 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$quiz_name, $course_id, $level_id]);
         $stmt->closeCursor();
         $message = 'Exam added successfully.';
+        // Redirect after success
+        header('Location: quiz.php');
+        exit;
       } elseif ($action === 'update' && $quiz_id) {
         $stmt = $pdo->prepare('CALL update_exam_with_course(?,?,?,?)');
         $stmt->execute([$quiz_id, $quiz_name, $course_id, $level_id]);
         $stmt->closeCursor();
         $message = 'Exam updated successfully.';
+        // Redirect after success
+        header('Location: quiz.php');
+        exit;
       } elseif ($action === 'delete' && $quiz_id) {
         $stmt = $pdo->prepare('CALL delete_exam_by_id(?)');
         $stmt->execute([$quiz_id]);
@@ -80,7 +100,17 @@ try {
 } catch (Exception $e) {
   $levelsList = [];
 }
-// Fetch courses
+// Fetch ALL exams for client-side filtering
+$allExamsForFiltering = [];
+try {
+  $pdo = getPDO();
+  $allStmt = $pdo->query('CALL get_all_exams_with_course_and_level()');
+  $allExamsForFiltering = $allStmt->fetchAll(PDO::FETCH_ASSOC);
+  $allStmt->closeCursor();
+} catch (Exception $e) {
+  $allExamsForFiltering = [];
+}
+
 $courses = [];
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $perPage = 5;
@@ -102,6 +132,10 @@ try {
     } elseif ($searchType === 'coursename') {
       $allCourses = array_filter($allCourses, function($course) use ($searchValueLower) {
         return mb_strpos(mb_strtolower($course['coursename']), $searchValueLower) !== false;
+      });
+    } elseif ($searchType === 'Exam') {
+      $allCourses = array_filter($allCourses, function($course) use ($searchValueLower) {
+        return mb_strpos(mb_strtolower($course['exam_name'] ?? ''), $searchValueLower) !== false;
       });
     }
     $allCourses = array_values($allCourses); // reindex
@@ -150,7 +184,7 @@ try {
     .form-section { background:#f8fafc; border-radius:12px; padding:24px; margin-bottom:32px; box-shadow:0 2px 12px #00214711; }
     .form-section h2 { margin-top:0; }
     .form-group { margin-bottom:16px; }
-    .form-group label { font-weight:600; display:block; margin-bottom:6px; }
+    .form-group label { font-weight:600; display:block; margin-bottom:6px; color:#000; }
     .form-group input, .form-group select, .form-group textarea { width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:1rem; }
     .form-actions { display:flex; gap:12px; }
     .btn { padding:8px 14px; border-radius:7px; border:none; font-weight:600; cursor:pointer; }
@@ -161,6 +195,97 @@ try {
 <body>
 <div class="container">
   <div style="margin-bottom:8px;">
+    <!-- Add Exam Form Section -->
+    <div class="form-section" id="addFormSection" style="display:none;">
+      <h2 style="margin-top:0;color:#081326;">Add New Exam</h2>
+      <form method="post" id="addExamForm">
+        <input type="hidden" name="action" value="add">
+        
+        <div class="form-group">
+          <label for="new_exam_name">Exam Name</label>
+          <input type="text" id="new_exam_name" name="exam_name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="new_course_id">Course</label>
+          <select id="new_course_id" name="course_id" required>
+            <option value="">Select a course</option>
+            <?php foreach ($coursesList as $course): ?>
+              <option value="<?= htmlspecialchars($course['courseid']) ?>">
+                <?= htmlspecialchars($course['coursename']) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="new_level_id">Level</label>
+          <select id="new_level_id" name="level_id" required>
+            <option value="">Select a level</option>
+            <?php foreach ($levelsList as $level): ?>
+              <option value="<?= htmlspecialchars($level['level_id']) ?>">
+                <?= htmlspecialchars($level['level_name']) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Create Exam</button>
+          <button type="button" class="btn" style="background:#6c757d;color:#fff;border:none;" onclick="toggleAddForm();">Cancel</button>
+        </div>
+      </form>
+    </div>
+    <?php if (isset($_GET['edit']) && $_GET['edit'] !== ''): ?>
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e0e0e0;">
+    <?php endif; ?>
+    
+    <?php if ($editExam): ?>
+      <!-- Edit Form Section -->
+      <div class="form-section">
+        <h2 style="margin-top:0;color:#081326;">Edit Exam</h2>
+        <form method="post" id="editExamForm">
+          <input type="hidden" name="action" value="update">
+          <input type="hidden" name="exam_id" value="<?= htmlspecialchars($editExam['exam_id']) ?>">
+          
+          <div class="form-group">
+            <label for="exam_name">Exam Name</label>
+            <input type="text" id="exam_name" name="exam_name" value="<?= htmlspecialchars($editExam['exam_name'] ?? '') ?>" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="course_id">Course</label>
+            <select id="course_id" name="course_id" required>
+              <option value="">Select a course</option>
+              <?php foreach ($coursesList as $course): ?>
+                <option value="<?= htmlspecialchars($course['courseid']) ?>" <?= ($course['courseid'] == $editExam['course_id']) ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($course['coursename']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="level_id">Level</label>
+            <select id="level_id" name="level_id" required>
+              <option value="">Select a level</option>
+              <?php foreach ($levelsList as $level): ?>
+                <option value="<?= htmlspecialchars($level['level_id']) ?>" <?= ($level['level_id'] == $editExam['level_id']) ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($level['level_name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn primary">Update Exam</button>
+            <a href="quiz.php" class="btn" style="background:#6c757d;color:#fff;text-decoration:none;display:inline-block;">Cancel</a>
+          </div>
+        </form>
+      </div>
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e0e0e0;">
+    <?php endif; ?>
+    
     <h2 style="color:white;margin:0 0 18px 0;white-space:nowrap;font-size:1.5em;text-align:center;width:100%;">Exam List</h2>
     <form method="post" class="search-bar" id="courseSearchForm" style="margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <label for="search_type" style="font-size:0.96em;">Search by:</label>
@@ -170,8 +295,8 @@ try {
         <option value="coursename" <?= isset($_POST['search_type']) && $_POST['search_type']==='coursename'?'selected':'' ?>>Course Name</option>
       </select>
       <input type="text" name="search_value" id="search_value" value="<?= isset($_POST['search_value']) ? htmlspecialchars($_POST['search_value']) : '' ?>" placeholder="Enter value..." style="font-size:0.96em;max-width:120px;">
-      <button type="submit" style="font-size:0.96em;padding:5px 10px;cursor:pointer;display:none;">Search</button>
-      <button type="button" onclick="window.location.href='addexam.php';" style="margin-left:5px;padding:5px 10px;border-radius:6px;background:#28a745;color:#fff;border:none;font-weight:600;font-size:0.96em;cursor:pointer;">Add Exam</button>
+      <button type="submit" style="font-size:0.96em;padding:5px 10px;cursor:pointer;border-radius:6px;background:#0078d4;color:#fff;border:none;font-weight:600;">Search</button>
+      <button type="button" onclick="toggleAddForm();" style="margin-left:5px;padding:5px 10px;border-radius:6px;background:#28a745;color:#fff;border:none;font-weight:600;font-size:0.96em;cursor:pointer;">Add Exam</button>
       <button type="button" onclick="window.location.reload();" style="margin-left:5px;padding:5px 10px;border-radius:6px;background:#0078d4;color:#fff;border:none;font-weight:600;font-size:0.96em;cursor:pointer;">Refresh</button>
       <?php if ($totalPages > 1): ?>
         <div class="pagination" style="display:flex;gap:2px;align-items:center;margin-left:12px;justify-content:center;">
@@ -202,12 +327,12 @@ try {
       <tbody>
         <?php foreach ($courses as $course): ?>
           <tr>
-            <td style="word-break:break-word;"><?php echo htmlspecialchars($course['quiz_name']); ?></td>
-            <td style="word-break:break-word;"><?php echo htmlspecialchars($course['coursename']); ?></td>
-            <td><?php echo htmlspecialchars($course['level_name']); ?></td>
+            <td style="word-break:break-word;"><?php echo htmlspecialchars($course['exam_name'] ?? $course['quiz_name'] ?? ''); ?></td>
+            <td style="word-break:break-word;"><?php echo htmlspecialchars($course['coursename'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($course['level_name'] ?? ''); ?></td>
             <td class="actions" style="min-width:110px;max-width:110px;gap:8px;align-items:center;">
-              <a href="exam.php?delete=<?php echo urlencode($course['quiz_id']); ?>" onclick="return confirm('Delete this exam?');" title="Delete" class="action-icon delete-icon"><span>🗑️</span></a>
-              <a href="#" onclick="openExamEdit(<?php echo htmlspecialchars(json_encode($course)); ?>);return false;" title="Update" class="action-icon update-icon"><span>✏️</span></a>
+              <a href="quiz.php?delete=<?php echo urlencode($course['exam_id'] ?? $course['quiz_id'] ?? ''); ?>" onclick="return confirm('Delete this exam?');" title="Delete" class="action-icon delete-icon"><span>🗑️</span></a>
+              <a href="?edit=<?php echo urlencode($course['exam_id'] ?? $course['quiz_id'] ?? ''); ?>" title="Update" class="action-icon update-icon"><span>✏️</span></a>
             </td>
           </tr>
         <?php endforeach; ?>
@@ -218,30 +343,45 @@ try {
   </div>
 </div>
   <script>
-    function openExamEdit(course) {
-      // Open addexam.php in edit mode with quiz_id
-      window.location.href = 'addexam.php?edit=' + encodeURIComponent(course.quiz_id);
+    // All exams data for filtering
+    var allExamsData = <?php echo json_encode($allExamsForFiltering); ?>;
+    
+    function toggleAddForm() {
+      var addFormSection = document.getElementById('addFormSection');
+      if (addFormSection.style.display === 'none') {
+        addFormSection.style.display = 'block';
+        addFormSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        addFormSection.style.display = 'none';
+      }
     }
+    
+    // Debounce function to avoid too many submissions
+    var searchTimeout;
     document.getElementById('search_value').addEventListener('input', function(e) {
-      e.preventDefault(); // Prevent form submission
-      var filter = this.value.toLowerCase();
+      clearTimeout(searchTimeout);
+      var filter = this.value.trim();
       var searchType = document.getElementById('search_type').value;
-      var rows = document.querySelectorAll('.course-table tbody tr');
-      rows.forEach(function(row) {
-        var examNameCell = row.querySelectorAll('td')[0]; // Exam Name
-        var courseNameCell = row.querySelectorAll('td')[1]; // Course Name
-        var match = false;
-        if (searchType.toLowerCase() === 'exam' && examNameCell) {
-          match = examNameCell.textContent.toLowerCase().indexOf(filter) !== -1;
-        } else if (searchType.toLowerCase() === 'coursename' && courseNameCell) {
-          match = courseNameCell.textContent.toLowerCase().indexOf(filter) !== -1;
-        } else if (!searchType) {
-          match = true;
-        } else {
-          match = false;
-        }
-        row.style.display = match ? '' : 'none';
-      });
+      
+      // If empty or no search type selected, clear and show all on first page
+      if (!filter || !searchType) {
+        window.location.href = 'quiz.php';
+        return;
+      }
+      
+      // Auto-submit the form after 500ms delay
+      searchTimeout = setTimeout(function() {
+        document.getElementById('courseSearchForm').submit();
+      }, 500);
+    });
+    
+    document.getElementById('search_type').addEventListener('change', function(e) {
+      var searchValue = document.getElementById('search_value').value.trim();
+      if (searchValue) {
+        // Auto-submit if there's already search text and type changed
+        clearTimeout(searchTimeout);
+        document.getElementById('courseSearchForm').submit();
+      }
     });
   </script>
 </body>
