@@ -325,6 +325,8 @@ if (session_status() === PHP_SESSION_NONE) {
           $catStmt->closeCursor();
         } catch (Exception $e) {
           $categories = [];
+          // Temporarily display error for debugging
+          echo "<p style='color:red;'>Database error: " . htmlspecialchars($e->getMessage()) . "</p>";
         }
         foreach ($categories as $cat) {
           // Fetch courses for this category

@@ -1,9 +1,9 @@
 <?php
 // config.php — Database connection settings for KMIT Courses
-$host = 'localhost';
-$db   = 'kmit_db';
-$user = 'root';
-$pass = '';
+$host = 'srv1946.hstgr.io';
+$db   = 'u683763345_kmit_db';
+$user = 'u683763345_raman';
+$pass = 'Ram#Ritika9';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -13,7 +13,7 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 if ($_SERVER['HTTP_HOST'] == 'localhost') {
-    define('BASE_URL', '/mysite/'); // Adjust to your local folder
+    define('BASE_URL', '/'); // Adjust to your local folder
 } else {
     define('BASE_URL', '/');
 }
