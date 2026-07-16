@@ -13,7 +13,7 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 if ($_SERVER['HTTP_HOST'] == 'localhost') {
-    define('BASE_URL', '/'); // Adjust to your local folder
+    define('BASE_URL', '/mysite/'); // Adjust to your local folder
 } else {
     define('BASE_URL', '/');
 }

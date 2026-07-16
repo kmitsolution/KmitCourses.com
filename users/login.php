@@ -1,51 +1,73 @@
 <?php
 require_once '../config.php';
 session_start();
+
+// Logging function
+function logEvent($message) {
+    $logFile = '../logs/website.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+    $logEntry = "[$timestamp] IP: $ip | User-Agent: $userAgent | $message\n";
+    error_log($logEntry, 3, $logFile);
+}
+
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     if ($username && $password) {
-        $pdo = getPDO();
-        // Use a stored procedure to get username and hashed password (case-insensitive)
-        $stmt = $pdo->prepare('CALL get_user_by_credentials(?, NULL)');
-        $stmt->execute([strtolower($username)]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stmt->closeCursor();
-        if ($result && isset($result['username']) && isset($result['password']) && password_verify($password, $result['password'])) {
-            // Get studentid for session using stored procedure
-            $idStmt = $pdo->prepare('CALL get_studentid_by_username(?)');
-            $idStmt->execute([strtolower($username)]);
-            $user1 = $idStmt->fetch(PDO::FETCH_ASSOC);
-            $idStmt->closeCursor();
-            $_SESSION['studentid'] = $user1['studentid'];
-            $_SESSION['username'] = $result['username'];
-            // Get roles using stored procedure
-            $roleStmt = $pdo->prepare('CALL get_studentid_roles(?)');
-            $roleStmt->execute([$user1['studentid']]);
-            $_SESSION['roles'] = [];
-            while ($row = $roleStmt->fetch(PDO::FETCH_ASSOC)) {
-                if (isset($row['rolename'])) {
-                    $_SESSION['roles'][] = $row['rolename'];
+        try {
+            $pdo = getPDO();
+            // Use a stored procedure to get username and hashed password (case-insensitive)
+            $stmt = $pdo->prepare('CALL get_user_by_credentials(?, NULL)');
+            $stmt->execute([strtolower($username)]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt->closeCursor();
+            if ($result && isset($result['username']) && isset($result['password']) && password_verify($password, $result['password'])) {
+                // Successful login
+                logEvent("Successful login: $username");
+                // Get studentid for session using stored procedure
+                $idStmt = $pdo->prepare('CALL get_studentid_by_username(?)');
+                $idStmt->execute([strtolower($username)]);
+                $user1 = $idStmt->fetch(PDO::FETCH_ASSOC);
+                $idStmt->closeCursor();
+                $_SESSION['studentid'] = $user1['studentid'];
+                $_SESSION['username'] = $result['username'];
+                // Get roles using stored procedure
+                $roleStmt = $pdo->prepare('CALL get_studentid_roles(?)');
+                $roleStmt->execute([$user1['studentid']]);
+                $_SESSION['roles'] = [];
+                while ($row = $roleStmt->fetch(PDO::FETCH_ASSOC)) {
+                    if (isset($row['rolename'])) {
+                        $_SESSION['roles'][] = $row['rolename'];
+                    }
                 }
-            }
-            $roleStmt->closeCursor();
-            // Check if user is admin using stored procedure, store in session
-            $isAdmin = false;
-            try {
-                $adminPdo = getPDO();
-                $adminStmt = $adminPdo->prepare('CALL is_student_admin(?)');
-                $adminStmt->execute([$_SESSION['username']]);
-                $isAdmin = $adminStmt->fetch() ? true : false;
-                $adminStmt->closeCursor();
-            } catch (Exception $e) {
+                $roleStmt->closeCursor();
+                // Check if user is admin using stored procedure, store in session
                 $isAdmin = false;
+                try {
+                    $adminPdo = getPDO();
+                    $adminStmt = $adminPdo->prepare('CALL is_student_admin(?)');
+                    $adminStmt->execute([$_SESSION['username']]);
+                    $isAdmin = $adminStmt->fetch() ? true : false;
+                    $adminStmt->closeCursor();
+                } catch (Exception $e) {
+                    $isAdmin = false;
+                    logEvent("Error checking admin status for $username: " . $e->getMessage());
+                }
+                $_SESSION['is_admin'] = $isAdmin;
+                $redirect = $_GET['redirect'] ?? '../default.php';
+                header('Location: ' . $redirect);
+                exit;
+            } else {
+                // Failed login
+                logEvent("Failed login attempt: $username");
+                $message = 'Invalid username or password.';
             }
-            $_SESSION['is_admin'] = $isAdmin;
-            header('Location: ../default.php');
-            exit;
-        } else {
-            $message = 'Invalid username or password.';
+        } catch (Exception $e) {
+            logEvent("Database error during login for $username: " . $e->getMessage());
+            $message = 'An error occurred. Please try again.';
         }
     } else {
         $message = 'Please enter both username and password.';

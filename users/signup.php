@@ -47,7 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_GET['from']) && $_GET['from'] === 'userlist') {
                 echo '<script>window.close();window.opener.location.reload();</script>';
             } else {
-                echo '<script>alert("Signup successful! You can now login."); window.location.href = "login.php";</script>';
+                $redirect = $_GET['redirect'] ?? '';
+                $loginUrl = 'login.php';
+                if ($redirect) {
+                    $loginUrl .= '?redirect=' . urlencode($redirect);
+                }
+                echo '<script>alert("Signup successful! You can now login."); window.location.href = "' . $loginUrl . '";</script>';
             }
             exit;
         } catch (PDOException $e) {

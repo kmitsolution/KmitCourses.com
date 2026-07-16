@@ -1,51 +1,28 @@
 <?php
-// AWS Solution Architect Associate (SAA) Course Page (CSV-driven)
-// Keeps original look-and-feel; reads course details from data/courses.csv
-$id = isset($_GET['id']) && $_GET['id'] !== '' ? $_GET['id'] : '2';
-$csvPath = __DIR__ . '/../../data/courses.csv';
-$course = null;
+// AWS Solution Architect Professional (PSAA) Course Page
+require_once '../../config.php';
+session_start();
+$courseid = $_GET['courseid'] ?? null;
 $price = 'Contact for pricing';
-$validity = '';
-$thumbnail = '';
-$courseUrl = '';
-$courseNameDefault = 'AWS Solution Architect Associate (SAA)';
-if (file_exists($csvPath) && is_readable($csvPath)) {
-  if (($fh = fopen($csvPath, 'r')) !== false) {
-    $headers = fgetcsv($fh);
-    while (($row = fgetcsv($fh)) !== false) {
-      // map row to headers
-      $data = [];
-      foreach ($headers as $i => $h) {
-        $data[$h] = isset($row[$i]) ? $row[$i] : '';
-      }
-      if (isset($data['id']) && (string)$data['id'] === (string)$id) {
-        $course = $data;
-        break;
-      }
+if ($courseid) {
+    try {
+        $pdo = getPDO();
+        $stmt = $pdo->prepare('SELECT price FROM course WHERE courseid = ?');
+        $stmt->execute([$courseid]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($result && isset($result['price']) && $result['price'] !== null) {
+            $price = '₹' . number_format($result['price'], 0);
+        }
+    } catch (Exception $e) {
+        $price = 'Contact for pricing';
     }
-    fclose($fh);
-  }
 }
-if ($course) {
-  $courseName = $course['course_name'] ?: $courseNameDefault;
-  $price = $course['price'] ?: $price;
-  $validity = $course['validity'] ?? '';
-  $thumbnail = $course['thumbnail'] ?? '';
-  $courseUrl = $course['url'] ?? '';
-  $duration = $course['duration'] ?? '';
-  $loginUrl = $course['classurl'] ?? '';
-} else {
-  $courseName = $courseNameDefault;
-}
-// Build simple Login and Pay URLs (minimal behavior requested)
-//$loginUrl = 'https://huyddd.courses.store/courses/828784';
-//$payUrl = ' https://huyddd.courses.store/courses/828784';
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><?php echo htmlspecialchars($courseName); ?> | KMIT Courses</title>
+  <title>AWS Solution Architect Professional (SAP) | KMIT Courses</title>
   <link rel="stylesheet" href="../../assets/style.css" />
   <style>
     body { background: #0b1020; color: #e8edff; }
@@ -75,14 +52,23 @@ if ($course) {
   <div class="course-page">
     <header class="course-header">
       <div>
-        <h1><?php echo htmlspecialchars($courseName); ?></h1>
-        <p class="muted"><strong>Live Instructor-Led Training</strong> (<strong>32 hours</strong>) designed to prepare you for <strong>AWS Certified Solutions Architect - Associate</strong> certification and real-world architectures.</p>
+        <h1>AWS Solution Architect Professional (SAP)</h1>
+        <p class="muted"><strong>Live Instructor-Led Training</strong> (<strong>40 hours</strong>) designed to prepare you for <strong>AWS Certified Solutions Architect - Professional</strong> certification and complex cloud architectures.</p>
       </div>
       <div class="course-meta">
-        <span class="badge">Duration <?php echo htmlspecialchars($duration); ?></span>
-        <span class="badge">Price: <?php echo htmlspecialchars($price); ?><?php if ($validity): ?> • <?php echo htmlspecialchars($validity); ?><?php endif; ?></span>
-        <span class="badge"><a href="<?php echo $loginUrl; ?>" style="color:#5ab0ff; text-decoration:underline;">Buy this course</a> &nbsp; </span>
-        
+        <span class="badge">Total Hours: 40</span>
+        <span class="badge">Pay: 
+<?php if (strpos($price, '₹') === 0): ?>
+  <?php if (isset($_SESSION['studentid'])): ?>
+    <a href="https://razorpay.me/@kmitsolutionsservices" target="_blank" style="color:#5ab0ff; text-decoration:underline;">Pay <?php echo htmlspecialchars($price); ?></a>
+  <?php else: ?>
+    <a href="#" onclick="alert('Please signup or login first'); return false;" style="color:#5ab0ff; text-decoration:underline;">Pay <?php echo htmlspecialchars($price); ?></a>
+  <?php endif; ?>
+<?php else: ?>
+  <?php echo htmlspecialchars($price); ?>
+<?php endif; ?>
+        </span>
+        <span class="badge">Mode: Live Online Class</span>
       </div>
     </header>
 
@@ -140,10 +126,10 @@ if ($course) {
 
           <h3>Certification & Exam Preparation</h3>
           <ul>
-            <li><strong>Certificate:</strong> AWS Certified Solutions Architect - Associate</li>
-            <li><strong>Exam Registration:</strong> <a href="https://aws.amazon.com/certification/certified-solutions-architect-associate/" target="_blank" style="color: #5ab0ff;">Register for AWS SAA Exam</a></li>
+            <li><strong>Certificate:</strong> AWS Certified Solutions Architect - Professional</li>
+            <li><strong>Exam Registration:</strong> <a href="https://aws.amazon.com/certification/certified-solutions-architect-professional/" target="_blank" style="color: #5ab0ff;">Register for AWS SAP Exam</a></li>
             <li><strong>Reference Material:</strong> <a href="https://github.com/kmitsolution/DevOps-Mastering/tree/main/AWS-Architect" target="_blank" style="color: #5ab0ff;">GitHub Repository</a></li>
-            <li>Practice Exams and Hands-on Labs</li>
+            <li>Advanced Architecture Patterns and Best Practices</li>
           </ul>
         </section>
       </div>

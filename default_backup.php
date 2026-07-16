@@ -6,45 +6,15 @@ $csvPath = __DIR__ . '/data/courses.csv';
 $courses = [];
 if (file_exists($csvPath) && ($h = @fopen($csvPath, 'r')) !== false) {
   $headers = fgetcsv($h);
-  // read remaining lines and handle rows where price contains commas (unquoted)
-  while (($line = fgets($h)) !== false) {
-    $line = trim($line);
-    if ($line === '') continue;
-    $row = str_getcsv($line);
-    // If columns mismatch, attempt to repair by merging extra segments into the price field
-    if (count($row) !== count($headers)) {
-      $priceIndex = array_search('price', $headers);
-      if ($priceIndex === false) $priceIndex = 4; // fallback index
-      $diff = count($row) - count($headers);
-      if ($diff > 0 && isset($row[$priceIndex])) {
-        $merged = $row[$priceIndex];
-        for ($i = 1; $i <= $diff; $i++) {
-          if (isset($row[$priceIndex + $i])) $merged .= ',' . $row[$priceIndex + $i];
-        }
-        $newRow = [];
-        // copy before price
-        for ($i = 0; $i < $priceIndex; $i++) $newRow[] = $row[$i] ?? '';
-        // merged price
-        $newRow[] = $merged;
-        // copy remaining fields after the merged part
-        $start = $priceIndex + $diff + 1;
-        for ($i = $start; $i < count($row); $i++) $newRow[] = $row[$i];
-        // pad if necessary
-        while (count($newRow) < count($headers)) $newRow[] = '';
-        $row = $newRow;
-      } else {
-        // if repair not possible, skip this line
-        continue;
-      }
-    }
+  while (($row = fgetcsv($h)) !== false) {
     if (count($row) !== count($headers)) continue;
     $r = array_combine($headers, $row);
-    // Normalize price (remove stray spaces and thousands separator commas)
-    $price = isset($r['price']) ? str_replace([" ", ","], ['', ''], $r['price']) : '₹0';
+    // Clean price by removing spaces
+    $price = isset($r['price']) ? str_replace(' ', '', $r['price']) : '₹0';
     $courses[] = [
       'id' => $r['id'],
       'title' => $r['course_name'],
-      'description' => isset($r['validity']) ? $r['validity'] : 'Professional training course designed to enhance your skills',
+      'description' => 'Professional training course designed to enhance your skills',
       'price' => $price,
       'link' => $r['url'],
       'thumbnail' => $r['thumbnail'],
@@ -78,6 +48,8 @@ if (empty($courses)) {
         --primary: #0066cc;
         --primary-dark: #004499;
         --primary-light: #e6f2ff;
+        --secondary: #ff6b6b;
+        --accent: #00d4aa;
         --text-dark: #1a1a2e;
         --text-light: #666666;
         --bg-light: #f8fafc;
@@ -248,6 +220,7 @@ if (empty($courses)) {
         transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        position: relative;
       }
       .tile:hover { 
         transform: translateY(-8px); 
@@ -285,7 +258,7 @@ if (empty($courses)) {
       
       .tile-title { 
         font-size: 1.2rem; 
-        margin: 0; 
+        margin: 0 0 8px 0; 
         color: var(--text-dark);
         font-weight: 800;
         line-height: 1.3;
@@ -372,16 +345,12 @@ if (empty($courses)) {
         color: var(--text-light); 
         line-height: 1.7;
       }
-      .info-card a {
-        color: var(--primary);
-        font-weight: 700;
-      }
 
       /* Footer */
       .footer { 
         background: linear-gradient(135deg, #0a2463 0%, #247ba0 100%);
         color: #fff; 
-        padding: 30px; 
+        padding: 30px 30px; 
         text-align: center;
         margin-top: 60px;
       }
@@ -439,8 +408,7 @@ if (empty($courses)) {
       
       /* Responsive */
       @media (max-width: 768px) {
-        .navbar { padding: 16px 20px; flex-direction: column; align-items: stretch; }
-        .nav-links { flex-direction: column; }
+        .navbar { padding: 16px 20px; }
         .hero { padding: 60px 20px 40px; }
         .hero h1 { font-size: 2rem; }
         .main { padding: 30px 20px; }
@@ -448,190 +416,201 @@ if (empty($courses)) {
         .modal img { width: 100%; height: 200px; }
         .filters-bar { flex-direction: column; align-items: stretch; }
         .filter-group select, .filter-group input { width: 100%; }
-        .topbar { flex-direction: column; align-items: stretch; text-align: center; }
-        .contact-info { justify-content: center; }
       }
+      .footer p { margin: 0; color: #cbd5e1; }
+      @media (max-width: 720px) { .navbar { flex-direction: column; align-items: stretch; } .contact-info { justify-content: center; } }
     </style>
   </head>
   <body>
-    <!-- Top Bar -->
-    <div class="topbar">
-      <div class="brand">
-        <img src="assets/images/Original.png" alt="KMIT Logo" />
-        <span style="font-weight: 800; font-size: 1.05rem;">KMIT Solutions</span>
-      </div>
-      <div class="contact-info">
-        <span>📞 <a href="tel:+918792217562">+91-8792217562</a></span>
-        <span>✉️ <a href="mailto:support@gmail.com">support@gmail.com</a></span>
-      </div>
-    </div>
-
-    <!-- Header & Navigation -->
-    <header>
-      <div class="navbar">
-        <div class="nav-brand">🎓 KMIT Courses</div>
-        <div class="nav-links">
-          <a href="#courses">Courses</a>
-          <a href="#why-us">Why Us</a>
-          <a href="#contact">Contact</a>
-          <?php if ($loggedIn): ?>
-            <span style="margin: 0 8px; color: var(--text-light);">|</span>
-            <span style="color: var(--primary); font-weight: 700;">Welcome, <?php echo htmlspecialchars(substr($username, 0, 20)); ?></span>
-            <a href="users/logout.php" class="btn-primary">Logout</a>
+      <?php if ($loggedIn): ?>
+      <div class="controls">
+            <div class="controls-left">
+              <div class="control">
+                <label for="category-filter" style="font-weight:600;color:#102a43;margin-right:8px;">Category</label>
+                <select id="category-filter" style="border:0;background:transparent;outline:none;">
+                  <option value="all">All categories</option>
+                </select>
+              </div>
+              <div class="control">
+                <label for="course-select" style="font-weight:600;color:#102a43;margin-right:8px;">Course</label>
+                <select id="course-select" style="border:0;background:transparent;outline:none;min-width:220px;">
+                  <option value="all">All courses</option>
+                </select>
+              </div>
+              <div class="control">
+                <input id="search-box" class="search-input" placeholder="Search courses..." aria-label="Search courses">
+              </div>
+            </div>
+            <div>
+              <span class="pill">Professional IT Courses • Career-focused</span>
+            </div>
+          </div>
           <?php else: ?>
-            <a href="https://huyddd.courses.store/courses" class="btn-primary">Login</a>
+            <a href="users/login.php" class="btn-primary">Login</a>
           <?php endif; ?>
         </div>
       </div>
     </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1>Master IT Skills for Your Career</h1>
-      <p>Choose from industry-leading courses in DevOps, AWS, Azure, Python, and Machine Learning. Learn from experts, build real projects, and accelerate your career growth.</p>
-      <div class="hero-actions">
-        <a href="#courses" class="btn-primary">Explore Courses</a>
-        <a href="#contact" style="border: 2px solid var(--primary); color: var(--primary); padding: 14px 26px; border-radius: 10px; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--primary-light)'" onmouseout="this.style.backgroundColor='transparent'">Contact Us</a>
-      </div>
-    </section>
-
-    <!-- Main Content -->
     <main class="main">
-      <!-- Courses Section -->
+      <section class="hero">
+        <h1>Ready to launch your career with practical IT courses?</h1>
+        <p>Choose from curated training programs in DevOps, AWS, Azure, Python, and Machine Learning — with real project experience and expert support.</p>
+        <div class="hero-actions">
+          <a href="#courses" class="btn-primary">View Courses</a>
+          <a href="#contact" style="border: 1.5px solid #0078d4; color: #0078d4;">Request Information</a>
+        </div>
+      </section>
       <section id="courses">
-        <div class="section-header">
-          <h2>Featured Courses</h2>
-          <p>Upskill with our curated professional training programs</p>
+        <div class="section-heading">
+          <h2>Course Tiles</h2>
+          <p style="margin:0;color:#64748b;">Click any course to visit its details.</p>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <label for="category-filter" style="font-weight:600;color:#102a43;">Category:</label>
+              <select id="category-filter" style="padding:8px;border-radius:8px;border:1px solid #d1e3f0;min-width:200px;">
+                <option value="all">All categories</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <label for="course-select" style="font-weight:600;color:#102a43;">Course:</label>
+              <select id="course-select" style="padding:8px;border-radius:8px;border:1px solid #d1e3f0;min-width:300px;">
+                <option value="all">All courses</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <!-- Filters & Search -->
-        <div class="filters-bar">
-          <div class="filter-group">
-            <label for="category-filter">🏷️ Filter by Category:</label>
-            <select id="category-filter">
-              <option value="all">All Categories</option>
-            </select>
-          </div>
-          <div class="filter-group" style="flex: 1; min-width: 250px;">
-            <label for="search-box">🔍 Search Courses:</label>
-            <input id="search-box" type="text" placeholder="Type course name...">
+        <div id="selected-course" style="display:none;margin-top:18px;">
+          <article class="tile" style="display:flex;gap:18px;align-items:center;">
+            <img id="selected-thumbnail" src="assets/images/Original.png" alt="thumbnail" style="width:140px;height:100px;object-fit:cover;border-radius:12px;">
+            <div>
+              <h3 id="selected-title" style="margin:0;font-size:1.2rem;color:#002147;">Course Title</h3>
+              <p id="selected-validity" style="margin:6px 0;color:#475569;"></p>
+              <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
+                <div id="selected-price" style="font-weight:700;color:#0078d4;font-size:1rem;"></div>
+                <a id="selected-link" class="tile-link" href="#">View Course</a>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Modal for course details -->
+        <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+          <div class="modal" role="document">
+            <div style="flex:0 0 340px">
+              <img id="modal-thumb" src="assets/images/Original.png" alt="course image">
+            </div>
+            <div class="content">
+              <button id="modal-close" class="close-btn" aria-label="Close">✕</button>
+              <h3 id="modal-title">Title</h3>
+              <div class="meta"><span id="modal-category" class="category-pill"></span><span id="modal-validity" style="margin-left:8px;color:#64748b"></span></div>
+              <p id="modal-desc" style="margin-top:12px;color:#334155"></p>
+              <div style="margin-top:18px;display:flex;gap:12px;align-items:center">
+                <div id="modal-price" style="font-weight:800;color:#0078d4;font-size:1.2rem"></div>
+                <a id="modal-enroll" class="tile-link" href="#">Open Course</a>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Course Grid -->
         <div class="tiles" id="course-tiles">
           <?php foreach ($courses as $course): ?>
             <article class="tile" data-category="<?php echo htmlspecialchars($course['category'] ?? ''); ?>" data-id="<?php echo htmlspecialchars($course['id'] ?? $course['title']); ?>">
-              <img src="<?php echo htmlspecialchars($course['thumbnail'] ?? 'assets/images/Original.png'); ?>" alt="<?php echo htmlspecialchars($course['title']); ?>" class="tile-image">
-              
-              <div class="tile-content">
-                <span class="tile-category"><?php echo htmlspecialchars($course['category']); ?></span>
+              <div>
+                <img src="<?php echo htmlspecialchars($course['thumbnail'] ?? 'assets/images/Original.png'); ?>" alt="<?php echo htmlspecialchars($course['title']); ?>" style="width:100%;height:140px;object-fit:cover;border-radius:12px;margin-bottom:12px;">
                 <h3 class="tile-title"><?php echo htmlspecialchars($course['title']); ?></h3>
                 <p class="tile-description"><?php echo htmlspecialchars($course['description']); ?></p>
-                
-                <div class="tile-meta">
-                  <span>⏱️ Duration: <?php echo htmlspecialchars($course['validity']); ?></span>
-                </div>
               </div>
-              
-              <div class="tile-footer" style="padding: 0 24px 24px 24px;">
+              <div class="tile-footer">
                 <span class="tile-price"><?php echo htmlspecialchars($course['price']); ?></span>
-                <a href="<?php echo htmlspecialchars($course['link']); ?>" class="tile-link">View Details →</a>
+                <a href="<?php echo htmlspecialchars($course['link']); ?>" class="tile-link">View Course</a>
               </div>
             </article>
           <?php endforeach; ?>
         </div>
       </section>
-
-      <!-- Why Choose Us Section -->
-      <section id="why-us" style="margin-top: 60px;">
-        <div class="section-header">
-          <h2>Why Choose KMIT Solutions?</h2>
-          <p>We deliver excellence in IT training with industry-focused curriculum</p>
+      <section id="why-us" style="margin-top:40px;">
+        <div class="section-heading">
+          <h2>Why choose KMIT Solutions Services?</h2>
         </div>
         <div class="info-cards">
-          <div class="info-card">
-            <h3>🎯 Practical Learning</h3>
-            <p>Hands-on projects and real-world scenarios. Our courses are designed around actual industry challenges that you'll face in your career.</p>
-          </div>
-          <div class="info-card">
-            <h3>👨‍🏫 Expert Mentors</h3>
-            <p>Learn from professionals with years of industry experience. Get personalized guidance, code reviews, and industry best practices.</p>
-          </div>
-          <div class="info-card">
-            <h3>🏆 Career Support</h3>
-            <p>Resume reviews, interview prep, and career guidance to help you land your dream job in IT.</p>
-          </div>
-          <div class="info-card">
-            <h3>📚 Flexible Learning</h3>
-            <p>Study at your own pace with lifetime access to course materials, video lectures, and resources.</p>
-          </div>
-          <div class="info-card">
-            <h3>🎓 Certifications</h3>
-            <p>Earn recognized certifications that boost your credentials and make you stand out to employers.</p>
-          </div>
-          
+          <div class="info-card"><h3>Practical Learning</h3><p>Courses are built around real use cases, lab work, and job-focused outcomes.</p></div>
+          <div class="info-card"><h3>Expert Mentors</h3><p>Learn from trainers with industry experience and certification-ready guidance.</p></div>
+          <div class="info-card"><h3>Career Support</h3><p>Get help with interview preparation, resume guidance, and live training support.</p></div>
         </div>
       </section>
-
-      <!-- Contact Section -->
-      <section id="contact" style="margin-top: 60px;">
-        <div class="section-header">
-          <h2>Get In Touch</h2>
-          <p>Have questions? We're here to help you choose the right course</p>
+      <?php if ($loggedIn): ?>
+      <section id="my-courses" style="margin-top:40px;">
+        <div class="section-heading">
+          <h2>My Courses</h2>
+          <p style="margin:0;color:#64748b;">Welcome back, <?php echo htmlspecialchars($username); ?>. Here are the courses you can access.</p>
         </div>
         <div class="info-cards">
-          <div class="info-card">
-            <h3>📞 Call Us</h3>
-            <p><a href="tel:+918792217562">+91-8792217562</a></p>
-            <p style="font-size: 0.9rem; margin-top: 8px; color: var(--text-light);">Mon-Fri, 9:00 AM - 6:00 PM IST</p>
-          </div>
-          <div class="info-card">
-            <h3>✉️ Email Us</h3>
-            <p><a href="mailto:support@kmicourses.com">support@kmicourses.com</a></p>
-            <p style="font-size: 0.9rem; margin-top: 8px; color: var(--text-light);">We'll respond within 24 hours</p>
-          </div>
-          <div class="info-card">
-            <h3>📍 Available 24/7</h3>
-            <p>KMIT Solutions Services<br />Professional IT Training | Career Development</p>
-          </div>
+          <div class="info-card"><h3>Enrolled Courses</h3><p>Your enrolled courses will appear here once you start learning.</p></div>
+          <div class="info-card"><h3>Progress Tracker</h3><p>Check course progress, upcoming lessons, and next steps from your dashboard.</p></div>
+        </div>
+      </section>
+      <?php endif; ?>
+      <section id="contact" style="margin-top:40px;">
+        <div class="section-heading">
+          <h2>Contact Us</h2>
+          <p style="margin:0;color:#64748b;">Have questions? Send us a message or call directly.</p>
+        </div>
+        <div class="info-cards">
+          <div class="info-card"><h3>Phone</h3><p><a href="tel:+918792217562" style="color:#0078d4;">+91-8792217562</a></p></div>
+          <div class="info-card"><h3>Email</h3><p><a href="mailto:support@gmail.com" style="color:#0078d4;">support@gmail.com</a></p></div>
         </div>
       </section>
     </main>
-
-    <!-- Footer -->
     <footer class="footer">
-      <p>&copy; <?php echo date('Y'); ?> KMIT Solutions Services. All rights reserved.</p>
-      <p style="margin-top: 8px; font-size: 0.9rem;">Professional IT Training | Career Development | Industry Expertise</p>
+      <p>© <?php echo date('Y'); ?> KMIT Solutions Services. All rights reserved.</p>
     </footer>
-
-    <!-- Modal -->
-    <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true">
-      <div class="modal" role="document">
-        <img id="modal-thumb" src="assets/images/Original.png" alt="course image">
-        <div class="content">
-          <button id="modal-close" class="close-btn" aria-label="Close">✕</button>
-          <h3 id="modal-title">Course Title</h3>
-          <div style="display: flex; gap: 12px; margin: 16px 0; align-items: center; flex-wrap: wrap;">
-            <span id="modal-category" class="tile-category"></span>
-            <span id="modal-validity" style="color: var(--text-light); font-size: 0.9rem;"></span>
-          </div>
-          <p id="modal-desc" style="color: var(--text-light); line-height: 1.7; margin: 16px 0;"></p>
-          <div style="margin-top: 24px; display: flex; gap: 16px; align-items: center;">
-            <div id="modal-price" style="font-weight: 800; color: var(--primary); font-size: 1.4rem;"></div>
-            <a id="modal-enroll" class="tile-link" href="#">Enroll Now →</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script>
       const coursesData = <?php echo json_encode($courses, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT); ?>;
-      
       (function(){
-        const categoryFilter = document.getElementById('category-filter');
-        const searchBox = document.getElementById('search-box');
-        const tilesWrap = document.getElementById('course-tiles');
+          const categoryFilter = document.getElementById('category-filter');
+          const courseSelect = document.getElementById('course-select');
+          const tilesWrap = document.getElementById('course-tiles');
+          const selectedCard = document.getElementById('selected-course');
+          const selThumb = document.getElementById('selected-thumbnail');
+          const selTitle = document.getElementById('selected-title');
+          const selPrice = document.getElementById('selected-price');
+          const selValidity = document.getElementById('selected-validity');
+          const selLink = document.getElementById('selected-link');
+
+        // populate category dropdown and course dropdown
+        const cats = Array.from(new Set(coursesData.map(c => c.category || '').filter(Boolean))).sort();
+        cats.forEach(cat => {
+          const o = document.createElement('option'); o.value = cat; o.textContent = cat; categoryFilter.appendChild(o);
+        });
+
+        function populateCourseSelect(category){
+          // clear options
+          while (courseSelect.options.length>0) courseSelect.remove(0);
+          const optAll = document.createElement('option'); optAll.value='all'; optAll.textContent='All courses'; courseSelect.appendChild(optAll);
+          const list = (category==='all') ? coursesData : coursesData.filter(c => c.category===category);
+          list.forEach(c => {
+            const o = document.createElement('option'); o.value = String(c.id ?? c.title); o.textContent = c.title + (c.category?(' — '+c.category):''); courseSelect.appendChild(o);
+          });
+          courseSelect.value = 'all';
+        }
+        // initial populate
+        populateCourseSelect('all');
+
+        // show selected course in featured card (returns course object)
+        function showCourseById(id){
+          const c = coursesData.find(x => String(x.id)===String(id) || x.title===id);
+          if (!c) { selectedCard.style.display='none'; return null; }
+          selThumb.src = c.thumbnail || 'assets/images/Original.png';
+          selTitle.textContent = c.title;
+          selPrice.textContent = c.price || '';
+          selValidity.textContent = c.validity ? ('Validity: '+c.validity) : '';
+          selLink.href = c.link || '#';
+          selectedCard.style.display = '';
+          return c;
+        }
+
+        // modal elements
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalThumb = document.getElementById('modal-thumb');
         const modalTitle = document.getElementById('modal-title');
@@ -642,16 +621,6 @@ if (empty($courses)) {
         const modalValidity = document.getElementById('modal-validity');
         const modalClose = document.getElementById('modal-close');
 
-        // Populate category dropdown
-        const cats = Array.from(new Set(coursesData.map(c => c.category || '').filter(Boolean))).sort();
-        cats.forEach(cat => {
-          const o = document.createElement('option'); 
-          o.value = cat; 
-          o.textContent = cat; 
-          categoryFilter.appendChild(o);
-        });
-
-        // Modal functions
         function openModalForCourse(c){
           if (!c) return;
           modalThumb.src = c.thumbnail || 'assets/images/Original.png';
@@ -660,12 +629,16 @@ if (empty($courses)) {
           modalPrice.textContent = c.price || '';
           modalEnroll.href = c.link || '#';
           modalCategory.textContent = c.category || '';
-          modalValidity.textContent = c.validity ? ('⏱️ Duration: ' + c.validity) : '';
+          modalValidity.textContent = c.validity ? ('Validity: '+c.validity) : '';
           modalBackdrop.style.display = 'flex';
           modalClose.focus();
         }
+        modalClose.addEventListener('click', ()=> modalBackdrop.style.display='none');
+        modalBackdrop.addEventListener('click', (e)=>{ if (e.target===modalBackdrop) modalBackdrop.style.display='none'; });
+        document.addEventListener('keydown', (e)=>{ if (e.key==='Escape') modalBackdrop.style.display='none'; });
 
-        // Filter and search
+        // search box filtering
+        const searchBox = document.getElementById('search-box');
         function filterTiles(){
           const cat = categoryFilter.value || 'all';
           const q = (searchBox.value || '').toLowerCase();
@@ -675,29 +648,40 @@ if (empty($courses)) {
             const category = t.getAttribute('data-category')||'';
             const show = (cat==='all' || category===cat) && (!q || title.indexOf(q) !== -1);
             t.style.display = show ? '' : 'none';
+            if (!show) t.style.boxShadow='';
           });
         }
 
-        // Event listeners
-        categoryFilter.addEventListener('change', filterTiles);
-        searchBox.addEventListener('input', filterTiles);
-        
-        modalClose.addEventListener('click', ()=> modalBackdrop.style.display='none');
-        modalBackdrop.addEventListener('click', (e)=>{ 
-          if (e.target===modalBackdrop) modalBackdrop.style.display='none'; 
-        });
-        document.addEventListener('keydown', (e)=>{ 
-          if (e.key==='Escape') modalBackdrop.style.display='none'; 
+        categoryFilter.addEventListener('change', function(){
+          populateCourseSelect(this.value);
+          filterTiles();
+          selectedCard.style.display = 'none';
         });
 
-        // Click tile to open modal
+        courseSelect.addEventListener('change', function(){
+          const v = this.value;
+          if (v==='all') { selectedCard.style.display='none'; return; }
+          const selected = showCourseById(v);
+          const tiles = tilesWrap.querySelectorAll('.tile');
+          tiles.forEach(t => t.style.boxShadow='');
+          const sel = tilesWrap.querySelector('[data-id="'+v+'"]');
+          if (sel) sel.style.boxShadow='0 18px 40px rgba(0,33,71,0.08)';
+          openModalForCourse(selected);
+        });
+
+        searchBox.addEventListener('input', ()=> filterTiles());
+
+        // clicking a tile selects it and opens modal
         tilesWrap.addEventListener('click', function(e){
-          const tile = e.target.closest('.tile'); 
-          if (!tile) return;
-          const id = tile.getAttribute('data-id'); 
-          if (!id) return;
-          const course = coursesData.find(x => String(x.id)===String(id) || x.title===id);
-          openModalForCourse(course);
+          const tile = e.target.closest('.tile'); if (!tile) return;
+          const id = tile.getAttribute('data-id'); if (!id) return;
+          const cat = tile.getAttribute('data-category') || '';
+          if (cat) categoryFilter.value = cat; else categoryFilter.value = 'all';
+          populateCourseSelect(cat || 'all');
+          courseSelect.value = id;
+          const selected = showCourseById(id);
+          openModalForCourse(selected);
+          selectedCard.scrollIntoView({behavior:'smooth',block:'center'});
         });
       })();
     </script>

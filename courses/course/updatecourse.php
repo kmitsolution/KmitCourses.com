@@ -83,7 +83,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     .btn { padding:8px 14px; border-radius:7px; border:none; font-weight:600; cursor:pointer; }
     .btn.primary { background:#0078d4; color:#fff; }
     .btn.danger { background:#d32f2f; color:#fff; }
+    .btn.secondary { background:#6c757d; color:#fff; }
   </style>
+  <script>
+    function openGallery() {
+      const galleryWindow = window.open('../../gallery/gallery.php?select=1', 'gallery', 'width=800,height=600,scrollbars=yes,resizable=yes');
+      window.addEventListener('message', function(event) {
+        if (event.origin !== window.location.origin) return;
+        if (event.data.selectedImage) {
+          const imagePath = event.data.selectedImage;
+          const filename = imagePath.split('/').pop();
+          document.getElementById('image').value = filename;
+          galleryWindow.close();
+        }
+      });
+    }
+  </script>
 </head>
 <body>
 <div class="container">
@@ -112,8 +127,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         </select>
       </div>
       <div class="form-group">
-        <label for="image">Image Filename:</label>
-        <input type="text" name="image" id="image" value="<?= htmlspecialchars($course['image']) ?>">
+        <label for="image">Image:</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" name="image" id="image" value="<?= htmlspecialchars($course['image']) ?>" readonly style="flex:1;">
+          <button type="button" onclick="openGallery()" class="btn primary" style="padding:6px 12px;font-size:0.9rem;">Select from Gallery</button>
+        </div>
+        <?php if ($course['image']): ?>
+          <div style="margin-top:8px;">
+            <img src="../assets/images/<?= htmlspecialchars($course['image']) ?>" alt="Current image" style="max-width:100px;max-height:75px;border-radius:4px;object-fit:cover;">
+          </div>
+        <?php endif; ?>
       </div>
       <div class="form-group">
         <label for="description">Description:</label>
@@ -128,6 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <input type="number" step="0.01" name="price" id="price" value="<?= htmlspecialchars($course['price']) ?>">
       </div>
       <div class="form-actions">
+        <a href="courseadmin.php" class="btn secondary" style="text-decoration:none;">Cancel</a>
         <button type="submit" name="action" value="update" class="btn primary">Update</button>
       </div>
     </form>

@@ -1,0 +1,7 @@
+id,course_name,url,thumbnail,price,validity,category,duration,classurl
+1,DevOps Bootcamp,https://huyddd.courses.store/courses/826915,assets/images/devops.png,₹230,1 Year,DevOps,32 hours,https://huyddd.courses.store/courses/828784
+2,AWS Solution Associate Architect,courses/Aws/SAA.php,assets/images/aws.png,₹1000,1 year,AWS,32 hours,https://huyddd.courses.store/courses/828784
+3,Azure Fundamentals,courses/Azure/AzureFundamentals.php,assets/images/azure.png,₹12,499,6 months,Azure,32 hours,https://huyddd.courses.store/courses/828784
+4,Python Programming,courses/OnlineBatches.php,assets/images/python.png,₹8,999,3 months,Programming,32 hours,https://huyddd.courses.store/courses/828784
+5,Machine Learning,courses/OnlineBatches.php,assets/images/ml.png,₹18,999,6 months,ML,32 hours,https://huyddd.courses.store/courses/828784
+6,AWS DevOps,courses/Aws/AwsDevOps.php,assets/images/aws.png,₹1000,1 year,AWS,32 hours,https://huyddd.courses.store/courses/828784
