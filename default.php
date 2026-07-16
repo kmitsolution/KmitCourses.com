@@ -18,6 +18,15 @@ if (session_status() === PHP_SESSION_NONE) {
     />
     <link rel="stylesheet" href="assets/style.css" />
     <style>
+      .header-social img { width:20px; height:20px; display:block; }
+      /* Ensure navbar lays out in a single row and the search form can shrink
+         so the social icons remain on the same line and are right-aligned */
+      #mainNav { display:flex; align-items:center; gap:10px; }
+      #mainNav form { flex:1 1 200px; min-width:0; }
+      .header-social { margin-left:12px; display:inline-flex; align-items:center; gap:10px; }
+      @media (max-width: 700px) {
+        .header-social { margin-left:8px !important; }
+      }
       .nav-toggle {
         display: none;
         background: none;
@@ -177,7 +186,18 @@ if (session_status() === PHP_SESSION_NONE) {
         <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' style='vertical-align:middle;margin-right:8px;fill:#5ab0ff;' viewBox='0 0 24 24'><path d='M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.2 2.2z'/></svg>
         <span style="font-weight:600;letter-spacing:1px;font-size:1.08em;">Call us:</span>
         <a href="tel:+919739299502" style="color:#5ab0ff;font-weight:700;text-decoration:none;margin-left:8px;font-size:1.08em;">+91-9739299502</a>
-        <span style="margin-left:28px;font-weight:700;font-size:1.08em;letter-spacing:1px;">KMIT Courses | KMIT Solutions Services</span>
+        <span style="margin-left:12px;font-weight:700;font-size:1.08em;letter-spacing:1px;">KMIT Courses | KMIT Solutions Services</span>
+        <span class="header-social" style="margin-left:auto;display:inline-flex;align-items:center;gap:10px;">
+              <a href="https://www.facebook.com/kmitdevops/" target="_blank" rel="noopener" title="Facebook" style="display:inline-flex;align-items:center;color:#0078d4;text-decoration:none;">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/facebook.svg" alt="Facebook" style="width:20px;height:20px;filter:invert(1) brightness(1.2);" />
+              </a>
+              <a href="https://instagram.com/" target="_blank" rel="noopener" title="Instagram" style="display:inline-flex;align-items:center;color:#0078d4;text-decoration:none;">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/instagram.svg" alt="Instagram" style="width:20px;height:20px;filter:invert(1) brightness(1.2);" />
+              </a>
+              <a href="https://wa.me/9739299502" target="_blank" rel="noopener" title="WhatsApp" style="display:inline-flex;align-items:center;color:#0078d4;text-decoration:none;">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/whatsapp.svg" alt="WhatsApp" style="width:20px;height:20px;filter:invert(1) brightness(1.2);" />
+              </a>
+            </span>
       </span>
     </div>
     <header>
@@ -238,6 +258,8 @@ if (session_status() === PHP_SESSION_NONE) {
             <?php endif; ?>
             <button id="contactBtn" class="btn" type="button" style="min-width:110px;color:#0078d4;background:#e5e7eb;border:1.5px solid #e0e0e0;font-size:1rem;">Contact Us</button>
             <a href="courses/OnlineBatches.php" class="btn" style="min-width:110px;color:#0078d4;background:#e5e7eb;border:1.5px solid #e0e0e0;font-size:1rem;">Live Classes</a>
+            <a href="quizzies.php" class="btn" style="min-width:110px;color:#0078d4;background:#e5e7eb;border:1.5px solid #e0e0e0;font-size:1rem;">Quizzies</a>
+
           </nav>
           <!-- Contact Us Modal (unchanged) -->
           <div id="contactModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); justify-content:center; align-items:center;">
@@ -303,6 +325,8 @@ if (session_status() === PHP_SESSION_NONE) {
           $catStmt->closeCursor();
         } catch (Exception $e) {
           $categories = [];
+          // Temporarily display error for debugging
+          echo "<p style='color:red;'>Database error: " . htmlspecialchars($e->getMessage()) . "</p>";
         }
         foreach ($categories as $cat) {
           // Fetch courses for this category
@@ -372,7 +396,130 @@ if (session_status() === PHP_SESSION_NONE) {
       </aside>
       <main style="flex:1;min-height:80vh;">
         <iframe id="courseContentFrame" src="" style="width:100%;height:80vh;border:none;display:none;background:#fff;box-shadow:0 2px 12px #00214711;border-radius:10px;margin:0;padding:0;"></iframe>
-        <div id="mainContentPlaceholder" style="width:100%;height:80vh;display:flex;align-items:center;justify-content:center;color:#888;font-size:1.1rem;">Main content goes here</div>
+        <div id="mainContentPlaceholder" style="width:100%;min-height:80vh;display:block;background:#fff;">
+          <!-- Landing Page Start -->
+          <section class="landing-hero" style="padding:48px 24px;background:linear-gradient(180deg,#f8fbff 0%,#ffffff 100%);">
+            <div class="container-landing" style="max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:28px;flex-wrap:wrap;">
+              <div class="hero-left" style="flex:1 1 420px;min-width:260px;">
+                <img src="assets/images/Original.png" alt="KMIT Solutions Services" style="height:78px;width:auto;object-fit:contain;margin-bottom:18px;display:block;" />
+                <h1 style="margin:0 0 12px 0;font-size:2rem;color:#002147;line-height:1.06;font-weight:800;">Empowering Careers Through IT Excellence</h1>
+                <p style="margin:0 0 18px 0;color:#334155;font-size:1.05rem;">KMIT Solutions Services delivers industry-relevant IT training for students and working professionals — hands-on labs, expert instructors, and career-focused learning.</p>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;">
+                  <a href="#courses" class="btn primary" style="background:#0078d4;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:700;box-shadow:0 6px 18px rgba(2,41,88,0.08);">Explore Courses</a>
+                  <a href="#contact" class="btn" style="background:transparent;border:2px solid #0078d4;color:#0078d4;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700;">Enroll Now</a>
+                </div>
+              </div>
+              <div class="hero-right" style="flex:0 0 380px;min-width:260px;display:flex;align-items:center;justify-content:center;">
+                <div style="width:320px;height:220px;border-radius:14px;background:linear-gradient(135deg,#fff 0%,#eaf6ff 100%);box-shadow:0 10px 30px rgba(2,41,88,0.06);display:flex;flex-direction:column;gap:8px;padding:18px;">
+                  <div style="font-weight:700;color:#002147;">Featured Programs</div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+                    <span class="pill" style="background:#fff;padding:8px 12px;border-radius:999px;border:1px solid #e6eef8;color:#065f9e;font-weight:700;font-size:0.9rem;">DevOps</span>
+                    <span class="pill" style="background:#fff;padding:8px 12px;border-radius:999px;border:1px solid #e6eef8;color:#065f9e;font-weight:700;font-size:0.9rem;">AWS</span>
+                    <span class="pill" style="background:#fff;padding:8px 12px;border-radius:999px;border:1px solid #e6eef8;color:#065f9e;font-weight:700;font-size:0.9rem;">Azure</span>
+                    <span class="pill" style="background:#fff;padding:8px 12px;border-radius:999px;border:1px solid #e6eef8;color:#065f9e;font-weight:700;font-size:0.9rem;">Python</span>
+                  </div>
+                  <div style="margin-top:auto;display:flex;gap:8px;align-items:center;justify-content:space-between;">
+                    <div style="font-size:0.95rem;color:#0f172a;font-weight:700;">Hands-on Labs</div>
+                    <div style="font-size:0.9rem;color:#334155;">100+ hrs</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="courses" class="landing-courses" style="padding:36px 18px;">
+            <div style="max-width:1100px;margin:0 auto;">
+              <h2 style="color:#002147;margin:0 0 12px 0;font-size:1.4rem;">Our Courses</h2>
+              <p style="color:#475569;margin:0 0 18px 0;">Industry-focused tracks designed to make you job-ready.</p>
+              <div class="courses-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+                <!-- Course cards -->
+                <article class="card" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 8px 22px rgba(2,41,88,0.04);display:flex;flex-direction:column;gap:12px;transition:transform .18s ease,box-shadow .18s ease;">
+                  <div style="display:flex;align-items:center;gap:12px;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#0078d4" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l3 6 6 .5-4.5 3.6L18 20l-6-3-6 3 .5-7.9L2 8.5 8 8 12 2z"/></svg><h3 style="margin:0;font-size:1.05rem;color:#002147;">DevOps</h3></div>
+                  <p style="margin:0;color:#475569;">CI/CD, containerization, monitoring, and automation for production-ready pipelines.</p>
+                  <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;"><span style="color:#065f9e;font-weight:700;">Beginner → Advanced</span><a href="#contact" style="color:#0078d4;text-decoration:none;font-weight:700;">Enroll</a></div>
+                </article>
+
+                <article class="card" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 8px 22px rgba(2,41,88,0.04);display:flex;flex-direction:column;gap:12px;transition:transform .18s ease,box-shadow .18s ease;">
+                  <div style="display:flex;align-items:center;gap:12px;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#0078d4" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7l10 5 10-5-10-5zm0 7l10 5v7l-10-5-10 5v-7l10-5z"/></svg><h3 style="margin:0;font-size:1.05rem;color:#002147;">AWS</h3></div>
+                  <p style="margin:0;color:#475569;">Cloud architecture, compute & serverless services, and practical deployment strategies.</p>
+                  <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;"><span style="color:#065f9e;font-weight:700;">Certification Prep</span><a href="#contact" style="color:#0078d4;text-decoration:none;font-weight:700;">Enroll</a></div>
+                </article>
+
+                <article class="card" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 8px 22px rgba(2,41,88,0.04);display:flex;flex-direction:column;gap:12px;transition:transform .18s ease,box-shadow .18s ease;">
+                  <div style="display:flex;align-items:center;gap:12px;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#0078d4" xmlns="http://www.w3.org/2000/svg"><path d="M3 3h18v4H3V3zm0 7h18v11H3V10z"/></svg><h3 style="margin:0;font-size:1.05rem;color:#002147;">Azure</h3></div>
+                  <p style="margin:0;color:#475569;">Microsoft cloud services, identity, networking, and platform services for enterprises.</p>
+                  <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;"><span style="color:#065f9e;font-weight:700;">Hands-on Labs</span><a href="#contact" style="color:#0078d4;text-decoration:none;font-weight:700;">Enroll</a></div>
+                </article>
+
+                <article class="card" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 8px 22px rgba(2,41,88,0.04);display:flex;flex-direction:column;gap:12px;transition:transform .18s ease,box-shadow .18s ease;">
+                  <div style="display:flex;align-items:center;gap:12px;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#0078d4" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zM6 20v-1c0-2.8 2.2-5 5-5h2c2.8 0 5 2.2 5 5v1H6z"/></svg><h3 style="margin:0;font-size:1.05rem;color:#002147;">Python</h3></div>
+                  <p style="margin:0;color:#475569;">Core programming, automation, data manipulation, and scripting for cloud use-cases.</p>
+                  <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;"><span style="color:#065f9e;font-weight:700;">Project Work</span><a href="#contact" style="color:#0078d4;text-decoration:none;font-weight:700;">Enroll</a></div>
+                </article>
+
+                <article class="card" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 8px 22px rgba(2,41,88,0.04);display:flex;flex-direction:column;gap:12px;transition:transform .18s ease,box-shadow .18s ease;">
+                  <div style="display:flex;align-items:center;gap:12px;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#0078d4" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg><h3 style="margin:0;font-size:1.05rem;color:#002147;">Machine Learning</h3></div>
+                  <p style="margin:0;color:#475569;">Foundations of ML, model building, evaluation, and deployment on cloud platforms.</p>
+                  <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;"><span style="color:#065f9e;font-weight:700;">Capstone Project</span><a href="#contact" style="color:#0078d4;text-decoration:none;font-weight:700;">Enroll</a></div>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="landing-why" style="background:#f8fbff;padding:34px 18px;border-top:1px solid #eef4fb;">
+            <div style="max-width:1100px;margin:0 auto;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+              <div style="flex:1 1 420px;min-width:260px;">
+                <h2 style="margin:0 0 10px 0;color:#002147;font-size:1.25rem;">Why Choose KMIT Solutions Services</h2>
+                <ul style="margin:0;padding:0 0 0 18px;color:#334155;">
+                  <li style="margin-bottom:10px;">Industry experts with real-world experience</li>
+                  <li style="margin-bottom:10px;">Hands-on projects and labs</li>
+                  <li style="margin-bottom:10px;">Career guidance and interview prep</li>
+                  <li style="margin-bottom:10px;">Certification support and exam readiness</li>
+                </ul>
+              </div>
+              <div style="flex:1 1 300px;min-width:260px;">
+                <h3 style="margin:0 0 8px 0;color:#002147;font-size:1.05rem;">Testimonials</h3>
+                <blockquote style="margin:0;padding:12px;border-radius:10px;background:#fff;box-shadow:0 8px 20px rgba(2,41,88,0.03);color:#334155;">“The trainers at KMIT helped me transition to a cloud engineering role — practical and focused.” <br/><small style="color:#64748b;">— Anshul, Cloud Engineer</small></blockquote>
+              </div>
+            </div>
+          </section>
+
+          <section id="about" style="padding:28px 18px;">
+            <div style="max-width:1100px;margin:0 auto;">
+              <h2 style="color:#002147;margin:0 0 8px 0;font-size:1.2rem;">About Us</h2>
+              <p style="color:#475569;margin:0 0 6px 0;">KMIT Solutions Services is a professional IT training institute delivering practical, job-ready courses in Cloud, DevOps, Programming, and Machine Learning. We focus on real-world scenarios and projects to prepare students for industry roles.</p>
+            </div>
+          </section>
+
+          <section id="contact" style="padding:28px 18px;background:#ffffff;border-top:1px solid #eef4fb;">
+            <div style="max-width:700px;margin:0 auto;">
+              <h2 style="color:#002147;margin:0 0 12px 0;font-size:1.2rem;">Contact Us</h2>
+              <form id="landingContactForm" style="display:grid;gap:10px;"> 
+                <input type="text" id="contactName" name="name" placeholder="Your name" required style="padding:10px;border-radius:8px;border:1px solid #e6eef8;">
+                <input type="email" id="contactEmail" name="email" placeholder="Your email" required style="padding:10px;border-radius:8px;border:1px solid #e6eef8;">
+                <textarea id="contactMessage" name="message" placeholder="Message" rows="4" required style="padding:10px;border-radius:8px;border:1px solid #e6eef8;"></textarea>
+                <div style="display:flex;gap:10px;">
+                  <button type="submit" class="btn primary" style="background:#0078d4;color:#fff;padding:10px 16px;border-radius:8px;border:none;">Send Message</button>
+                  <button type="button" id="contactReset" class="btn" style="background:transparent;border:1.5px solid #e0e0e0;padding:10px 16px;border-radius:8px;">Reset</button>
+                </div>
+                <div id="contactMsg" role="status" style="color:#065f9e;font-weight:700;display:none;padding-top:6px;">Message sent — we will contact you soon.</div>
+              </form>
+            </div>
+          </section>
+
+          <footer style="padding:18px;background:#002147;color:#fff;margin-top:12px;">
+            <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+              <div style="font-weight:700;">KMIT Solutions Services</div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <a href="https://www.facebook.com/kmitdevops/" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;">Facebook</a>
+                <a href="https://instagram.com/" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;">Instagram</a>
+                <a href="https://wa.me/9739299502" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;">WhatsApp</a>
+              </div>
+              <div style="width:100%;text-align:center;color:#a8c8e6;font-size:0.95rem;margin-top:8px;">© <?php echo date('Y'); ?> KMIT Solutions Services. All rights reserved.</div>
+            </div>
+          </footer>
+          <!-- Landing Page End -->
+        </div>
       </main>
     </div>
     <script>
@@ -418,6 +565,49 @@ if (session_status() === PHP_SESSION_NONE) {
           }
         });
       });
+    });
+    </script>
+    <script>
+    // Landing page interactions: smooth scroll and contact form handling
+    document.addEventListener('DOMContentLoaded', function() {
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+          var href = this.getAttribute('href');
+          if (href && href.startsWith('#')) {
+            var target = document.querySelector(href);
+            if (target) {
+              e.preventDefault();
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+        });
+      });
+
+      // Contact form handling (client-side only)
+      var form = document.getElementById('landingContactForm');
+      if (form) {
+        var msg = document.getElementById('contactMsg');
+        var resetBtn = document.getElementById('contactReset');
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          // Basic validation
+          var name = document.getElementById('contactName').value.trim();
+          var email = document.getElementById('contactEmail').value.trim();
+          var message = document.getElementById('contactMessage').value.trim();
+          if (!name || !email || !message) {
+            alert('Please fill all required fields.');
+            return;
+          }
+          // Simulate send (implement server call later)
+          form.reset();
+          if (msg) { msg.style.display = 'block'; }
+          setTimeout(function() { if (msg) { msg.style.display = 'none'; } }, 6000);
+        });
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function() { form.reset(); });
+        }
+      }
     });
     </script>
   </body>
